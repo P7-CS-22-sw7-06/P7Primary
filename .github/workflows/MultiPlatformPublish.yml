@@ -47,7 +47,7 @@ jobs:
         with:
           # list of Docker images to use as base name for tags
           images: |
-            ghcr.io/P7-CS-22-sw7-06/P7Primary/
+            ghcr.io/P7-CS-22-sw7-06/P7Primary
           # Docker tags based on the following events/attributes
           tags: |
             type=schedule
