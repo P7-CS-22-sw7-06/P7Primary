@@ -50,5 +50,8 @@ DOCKER_VERSION=$(apt-cache madison docker-ce | awk '{ print $3 }' | grep '17')
 sudo apt-get install docker-ce=${DOCKER_VERSION} \
   docker-ce-cli=${DOCKER_VERSION} containerd.io docker-compose-plugin
 
+sudo apt-mark hold docker-ce
+sudo apt-mark hold docker-ce-cli
+
 sudo echo "{\"experimental\": true}" >> /etc/docker/daemon.json
 sudo mv daemon.json /etc/docker/daemon.json
