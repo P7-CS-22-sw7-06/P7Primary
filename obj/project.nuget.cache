@@ -1,0 +1,12 @@
+{
+  "version": 2,
+  "dgSpecHash": "qVlBMND6P9VFOaFKbTyuT1iRbHHDJLflhvVZKaTJloXFlHQZMBlnyZSivFCo1xKEV2Njj5Y0Q3uh6i2Wb6XoaQ==",
+  "success": true,
+  "projectFilePath": "D:\\GitHub\\P7Primary\\P7Primary.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\magnu\\.nuget\\packages\\serilog\\2.12.0\\serilog.2.12.0.nupkg.sha512",
+    "C:\\Users\\magnu\\.nuget\\packages\\serilog.sinks.console\\4.1.0\\serilog.sinks.console.4.1.0.nupkg.sha512",
+    "C:\\Users\\magnu\\.nuget\\packages\\serilog.sinks.file\\5.0.0\\serilog.sinks.file.5.0.0.nupkg.sha512"
+  ],
+  "logs": []
+}
