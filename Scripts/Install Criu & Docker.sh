@@ -2,6 +2,9 @@
 
 cd ~
 
+# This one is annoying
+sudo apt remove unattended-upgrades
+
 sudo apt update -y && sudo apt upgrade -y
 
 sudo add-apt-repository -y universe
