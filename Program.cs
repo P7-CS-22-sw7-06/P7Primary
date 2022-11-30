@@ -7,7 +7,7 @@ namespace P7;
 
 class Program
 {
-    static void Main()
+    static async Task Main()
     {
         Log.Logger = new LoggerConfiguration()
             .MinimumLevel.Debug()
@@ -19,7 +19,7 @@ class Program
             new Uri("unix:///var/run/docker.sock"))
             .CreateClient();
 
-        ContainerController containercontroller = new ContainerController(client);
+        ContainerController cc = new ContainerController(client);
 
         try
         {
@@ -27,6 +27,9 @@ class Program
             Log.Information($"Hello, {Environment.UserName}!");
             Log.Information($"Version Info: {client.System.GetVersionAsync()}");
             Log.Information($"System Info: {client.System.GetSystemInfoAsync()}");
+
+            await cc.CreateImageAsync("busybox");
+            await cc.CreateContainerAsync("magnustest1", "busybox", $@"/{Environment.GetFolderPath(Environment.SpecialFolder.UserProfile)}/payload.py");
         }
         catch (Exception ex)
         {
