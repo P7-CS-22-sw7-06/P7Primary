@@ -10,19 +10,23 @@ namespace P7;
 
 public class ContainerController
 {
-    public ContainerController(DockerClient Client)
-    {
-        if (Client is null)
-        {
-            throw new ArgumentNullException(nameof(Client));
-        }
+    // public ContainerController(DockerClient Client)
+    // {
+    //     if (Client is null)
+    //     {
+    //         throw new ArgumentNullException(nameof(Client));
+    //     }
 
-        Client = client;
-    }
+    //     Client = client;
+    // }
 
     #region Variables
 
-    DockerClient client { get; set; } = default!;
+    DockerClient client = new DockerClientConfiguration(
+        new Uri("unix:///var/run/docker.sock"))
+        .CreateClient();
+
+    // DockerClient client { get; set; } = default!;
 
     string PathToContainers = $@"/var/lib/docker/containers/";
 
@@ -30,25 +34,19 @@ public class ContainerController
 
     #region Methods
 
-    public async Task CreateImageAsync(string image)
+    public async Task CreateImageAsync(string imageName)
     {
-        // // Initialize Container StreamReader
-        // Stream stream = await client.System.MonitorEventsAsync(
-        //     new ContainerEventsParameters(),
-        //     new Progress<JSONMessage>(),
-        //     CancellationToken.None);
-
         await client.Images.CreateImageAsync(
             new ImagesCreateParameters
             {
-                FromImage = image
+                FromImage = imageName,
+                Tag = "latest"
             },
-            // stream,
             null,
             new Progress<JSONMessage>(),
             CancellationToken.None);
 
-        Log.Information($"Created image: {image}");
+        Log.Information($"Created image: {imageName}");
     }
 
     public async Task CreateContainerAsync(string name, string image, string payloadDirectory)
@@ -93,7 +91,7 @@ public class ContainerController
                 Limit = 10,
             },
             CancellationToken.None);
-
+        Console.WriteLine(containers[0]);
         Log.Information($"Listing Containers: \n{containers}");
     }
 

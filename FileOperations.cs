@@ -8,9 +8,9 @@ using Docker.DotNet.Models;
 
 namespace P7;
 
-public class Misc
+public class FileOperations
 {
-    public Misc() { }
+    public FileOperations() { }
 
     #region Variables
 

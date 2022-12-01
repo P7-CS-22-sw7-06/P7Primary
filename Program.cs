@@ -15,21 +15,16 @@ class Program
             .WriteTo.File("logs/myapp.txt", rollingInterval: RollingInterval.Day)
             .CreateLogger();
 
-        DockerClient client = new DockerClientConfiguration(
-            new Uri("unix:///var/run/docker.sock"))
-            .CreateClient();
-
-        ContainerController cc = new ContainerController(client);
+        ContainerController cc = new ContainerController();
 
         try
         {
             Console.WriteLine("Starting Program...");
             Log.Information($"Hello, {Environment.UserName}!");
-            Log.Information($"Version Info: {client.System.GetVersionAsync()}");
-            Log.Information($"System Info: {client.System.GetSystemInfoAsync()}");
 
-            await cc.CreateImageAsync("busybox");
-            await cc.CreateContainerAsync("magnustest1", "busybox", $@"/{Environment.GetFolderPath(Environment.SpecialFolder.UserProfile)}/payload.py");
+            // await cc.CreateContainerAsync("magnustest1", "busybox", $@"/home/magn/payload.sh");
+            await cc.ListAvailableContainersAsync();
+            // await cc.StartAsync("e1b358378b38");
         }
         catch (Exception ex)
         {
