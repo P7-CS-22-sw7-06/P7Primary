@@ -1,20 +1,15 @@
-# syntax=docker/dockerfile:1
+FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build-env
+WORKDIR /App
 
-FROM python:3.8-slim-buster
-ARG TARGETOS
-ARG TARGETARCH
+# Copy everything
+COPY . ./
+# Restore as distinct layers
+RUN dotnet restore
+# Build and publish a release
+RUN dotnet publish -c Release -o out
 
-#Set Relative Working Directory
-WORKDIR /app
-
-#Copy Requirements
-COPY . .
-
-#Install Packages
-RUN pip3 install -r requirements.txt
-
-#Copy all files from current direcory to image
-COPY . .
-
-CMD [ "python3","-u","./app.py"]
-
+# Build runtime image
+FROM mcr.microsoft.com/dotnet/aspnet:6.0
+WORKDIR /P7PRIMARY
+COPY --from=build-env /App/out .
+ENTRYPOINT ["dotnet", "P7Primary.dll"]

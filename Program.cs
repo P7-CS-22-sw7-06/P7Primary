@@ -31,14 +31,16 @@ class Program
 
             while (true)
             {
-                string filePath = System.IO.Path.Combine(payloadLocation, "payload.zip");
+                // string filePath = System.IO.Path.Combine(payloadLocation, "payload.zip");
 
-                if (System.IO.File.Exists(filePath))
-                {
-                    await cc.CreateContainerAsync(container, image, payloadLocation);
-                    string containerID = await cc.GetContainerIDByNameAsync(container);
-                    await cc.StartAsync(containerID);
-                }
+                //if (System.IO.File.Exists(filePath))
+                //{
+                    //await cc.CreateContainerAsync(container, image, payloadLocation);
+                    //string containerID = await cc.GetContainerIDByNameAsync(container);
+                    //await cc.StartAsync(containerID);
+                Console.WriteLine("Hello There ");
+
+                //}
 
                 Thread.Sleep(500);
             }
