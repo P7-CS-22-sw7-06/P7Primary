@@ -1,0 +1,22 @@
+flowchart BT
+    Start(Start)
+    Create[Create Docker Container]
+    Storage[(Storage)]
+
+    Start -->|Recieve Script from Server| Storage
+    Storage --> Create
+    Create -->|Start Container| Execute
+
+
+    subgraph Docker Container
+        Execute[Execute Script]
+        Checkpoint
+        Result[Result File]
+
+        Execute -->|Periodically| Checkpoint --> Execute
+        Execute -->|Save Result| Result
+    end
+
+    Result -->|Extract from Container| Storage
+    Checkpoint -.->|Save to Disk| Storage
+    Storage -->|Send Result to Server| Server(Server)

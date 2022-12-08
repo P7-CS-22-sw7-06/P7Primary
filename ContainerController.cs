@@ -10,23 +10,10 @@ namespace P7;
 
 public class ContainerController
 {
-    // public ContainerController(DockerClient Client)
-    // {
-    //     if (Client is null)
-    //     {
-    //         throw new ArgumentNullException(nameof(Client));
-    //     }
-
-    //     Client = client;
-    // }
-
     #region Variables
 
     DockerClient client = new DockerClientConfiguration(
-        new Uri("unix:///var/run/docker.sock"))
-        .CreateClient();
-
-    // DockerClient client { get; set; } = default!;
+            new Uri("unix:///var/run/docker.sock")).CreateClient();
 
     string PathToContainers = $@"/var/lib/docker/containers/";
 
@@ -51,23 +38,26 @@ public class ContainerController
 
     public async Task CreateContainerAsync(string name, string image, string payloadDirectory)
     {
-        // Read payload file
-        IList<string> payloads = new List<string>
-            { File.ReadAllText(payloadDirectory) };
-
         // Create Container
         await client.Containers.CreateContainerAsync(new CreateContainerParameters()
         {
             Image = image,
             Name = name,
-            Cmd = payloads
             // TODO: Add arbitrary arguments // TODO: Check if necessary
         },
         CancellationToken.None);
 
-        // TODO: Get Container ID
 
-        // TODO: Log.Information($"Created Container, id: {id}, name: {name}");
+        string id = await GetContainerIDByNameAsync(name);
+
+        await client.Containers.ExtractArchiveToContainerAsync(id, new ContainerPathStatParameters
+        {
+            Path = payloadDirectory
+        },
+        null,
+        CancellationToken.None);
+
+        Log.Information($"Created Container, id: {id}, name: {name}");
     }
 
     public async Task DeleteContainerAsync(string id)
@@ -83,7 +73,7 @@ public class ContainerController
         Log.Information($"Deleted Container: {id}");
     }
 
-    public async Task ListAvailableContainersAsync()
+    public async Task<string> GetContainerIDByNameAsync(string containerName)
     {
         IList<ContainerListResponse> containers = await client.Containers.ListContainersAsync(
             new ContainersListParameters()
@@ -92,7 +82,22 @@ public class ContainerController
             },
             CancellationToken.None);
         Console.WriteLine(containers[0]);
-        Log.Information($"Listing Containers: \n{containers}");
+
+        string containerID;
+
+        foreach (var container in containers)
+        {
+            if (container.Names.Contains("containerName"))
+            {
+                containerID = container.ID;
+
+                Log.Information($"Container {containerName} has id: \n{containerID}");
+
+                return containerID;
+            }
+        }
+
+        return "";
     }
 
     public async Task StartAsync(string id)
@@ -119,7 +124,7 @@ public class ContainerController
 
     }
 
-    public async void Execute(string id)
+    public async void Execute(string id, int interval)
     {
         await client.Exec.StartContainerExecAsync(
             id,
@@ -130,7 +135,7 @@ public class ContainerController
 
         while (await ContainerIsRunningAsync(id) == true)
         {
-            Thread.Sleep(500);
+            Thread.Sleep(interval);
 
             for (int i = 1; i > 0; i++)
             {
@@ -141,11 +146,23 @@ public class ContainerController
 
     public void Checkpoint(string id, string checkpointName)
     {
-        Process p = Process.Start(
-            "bash",
-            $@"docker checkpoint create {id} {checkpointName} --leave-running");
 
-        p.WaitForExit();
+        using (Process process = new Process())
+        {
+            process.StartInfo.FileName = "docker";
+            process.StartInfo.Arguments = $"checkpoint create {id} {checkpointName} --leave-running";
+            process.StartInfo.UseShellExecute = false;
+            process.StartInfo.RedirectStandardOutput = true;
+            process.Start();
+            string output = process.StandardOutput.ReadToEnd();
+            process.WaitForExit();
+        }
+
+        // Process process = Process.Start(
+        //     "bash",
+        //     $@"docker checkpoint create {id} {checkpointName} --leave-running");
+
+        // process.WaitForExit();
 
         Log.Information($"Stopped container: {id}");
     }
@@ -160,31 +177,43 @@ public class ContainerController
         await CreateContainerAsync(containerName, image, payload);
         // TODO: Arguments --security-opt seccomp:unconfined // TODO: Check if necessary
 
-        Process p = Process.Start(
-            "bash",
-            $@"docker start {containerName} --checkpoint {checkpointName}");
+        using (Process process = new Process())
+        {
+            process.StartInfo.FileName = "docker";
+            process.StartInfo.Arguments = $"start {containerName} --checkpoint {checkpointName}";
+            process.StartInfo.UseShellExecute = false;
+            process.StartInfo.RedirectStandardOutput = true;
+            process.Start();
+            string output = process.StandardOutput.ReadToEnd();
+            process.WaitForExit();
+        }
 
-        p.WaitForExit();
+        // Process process = Process.Start(
+        //     "bash",
+        //     $@"docker start {containerName} --checkpoint {checkpointName}");
+
+        // process.WaitForExit();
 
         Log.Information($"Restored container, id: {id}, checkpoint: {checkpointName}");
     }
 
     public async Task<bool> ContainerIsRunningAsync(string id)
     {
-        var isRunning = await client.Tasks.InspectAsync(id, CancellationToken.None);
-        // TODO: Get working
+        // Get a list of all the containers on the host
+        var containers = await client.Containers.ListContainersAsync(
+            new ContainersListParameters()
+        );
 
-        // string strCmdText = $"docker ps | grep {Name}";
-        // Process p = Process.Start("bash", strCmdText);
-        // p.WaitForExit();
+        // Check the status of each container
+        foreach (var container in containers)
+        {
+            if (container.Status.StartsWith("Up"))
+            {
+                return true;
+            }
+        }
 
-        // if (p.HasExited && p.StandardOutput.ToString() == "")
-        // {
-        //     return false;
-        // }
-        // return true;
-
-        return true;
+        return false;
     }
 
     #endregion Methods
