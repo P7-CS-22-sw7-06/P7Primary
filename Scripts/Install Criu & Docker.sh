@@ -69,5 +69,7 @@ wget https://dot.net/v1/dotnet-install.sh
 sudo chmod +x ./dotnet-install.sh
 ./dotnet-install.sh
 
+rm dotnet-install.sh
+
 echo 'export DOTNET_ROOT=$HOME/.dotnet' >> ~/.bashrc
 echo 'export PATH=$PATH:$DOTNET_ROOT:$DOTNET_ROOT/tools' >> ~/.bashrc
