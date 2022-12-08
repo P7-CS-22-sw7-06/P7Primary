@@ -10,14 +10,8 @@ namespace P7;
 
 public class FileOperations
 {
-    public FileOperations(DockerClient client)
-    {
-        this.client = client;
-    }
-
     #region Variables
 
-    DockerClient client { get; set; }
     string pathToContainers = $@"/var/lib/docker/containers";
     string pathToHome = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
 
@@ -61,7 +55,6 @@ public class FileOperations
     {
         string pathToCheckpoints = $@"/{pathToContainers}/{containerID}/checkpoints";
 
-        // Get permission to access container
         using (Process process = new Process())
         {
             process.StartInfo.FileName = "chmod";
@@ -72,8 +65,6 @@ public class FileOperations
             string output = process.StandardOutput.ReadToEnd();
             process.WaitForExit();
         }
-        // Process p = Process.Start("chmod", $"-R 755 {pathToContainers}");
-        // p.WaitForExit();
 
         string sourceFile = System.IO.Path.Combine(pathToCheckpoints, checkpoint);
         string destFile = System.IO.Path.Combine(pathToHome, checkpoint);
@@ -81,11 +72,10 @@ public class FileOperations
         System.IO.File.Copy(sourceFile, destFile, true);
     }
 
-    public void MoveCheckpointIntoContainer(string checkpoint, string containerID)
+    public void MoveAllCheckpointsFromContainer(string containerID)
     {
         string pathToCheckpoints = $@"/{pathToContainers}/{containerID}/checkpoints";
 
-        // Get permission to access container
         using (Process process = new Process())
         {
             process.StartInfo.FileName = "chmod";
@@ -96,8 +86,29 @@ public class FileOperations
             string output = process.StandardOutput.ReadToEnd();
             process.WaitForExit();
         }
-        // Process p = Process.Start("chmod", $"-R 755 {pathToContainers}");
-        // p.WaitForExit();
+
+        string[] files = Directory.GetFiles(pathToCheckpoints);
+        foreach (string file in files)
+        {
+            string destinationPath = Path.Combine(pathToHome, Path.GetFileName(file));
+            Directory.Move(file, destinationPath);
+        }
+    }
+
+    public void MoveCheckpointIntoContainer(string checkpoint, string containerID)
+    {
+        string pathToCheckpoints = $@"/{pathToContainers}/{containerID}/checkpoints";
+
+        using (Process process = new Process())
+        {
+            process.StartInfo.FileName = "chmod";
+            process.StartInfo.Arguments = $"-R 755 {pathToContainers}";
+            process.StartInfo.UseShellExecute = false;
+            process.StartInfo.RedirectStandardOutput = true;
+            process.Start();
+            string output = process.StandardOutput.ReadToEnd();
+            process.WaitForExit();
+        }
 
         string sourceFile = System.IO.Path.Combine(pathToHome, checkpoint);
         string destFile = System.IO.Path.Combine(pathToCheckpoints, checkpoint);

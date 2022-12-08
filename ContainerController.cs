@@ -36,9 +36,8 @@ public class ContainerController
         Log.Information($"Created image: {imageName}");
     }
 
-    public async Task CreateContainerAsync(string name, string image, string payloadDirectory)
+    public async Task CreateContainerAsync(string name, string image, string payloadTotalPath)
     {
-        // Create Container
         await client.Containers.CreateContainerAsync(new CreateContainerParameters()
         {
             Image = image,
@@ -52,7 +51,7 @@ public class ContainerController
 
         await client.Containers.ExtractArchiveToContainerAsync(id, new ContainerPathStatParameters
         {
-            Path = payloadDirectory
+            Path = payloadTotalPath
         },
         null,
         CancellationToken.None);
@@ -124,24 +123,58 @@ public class ContainerController
 
     }
 
-    public async void Execute(string id, int interval)
+    public async void Execute(string id, string payloadName, int interval)
     {
-        await client.Exec.StartContainerExecAsync(
+        var execTime = Stopwatch.StartNew();
+
+        Log.Information($"Container is running: {id}. Checkpointing every {interval}ms");
+
+        IList<string> args = new List<string>();
+        args.Add($"python {payloadName}.py");
+        await client.Exec.StartWithConfigContainerExecAsync(
             id,
+            new ContainerExecStartParameters()
+            {
+                Cmd = args
+            },
             CancellationToken.None
         );
 
-        Log.Information($"Container is running: {id}");
-
         while (await ContainerIsRunningAsync(id) == true)
         {
-            Thread.Sleep(interval);
-
             for (int i = 1; i > 0; i++)
             {
-                Checkpoint(id, $"checkpoint-{id}" + i);
+                string currentCheckpoint = $"checkpoint-{id}";
+                Checkpoint(id, currentCheckpoint);
+                Log.Information($"Made Checkpoint: {currentCheckpoint}");
+
+                Thread.Sleep(interval);
             }
         }
+
+        execTime.Stop();
+        Log.Logger.Information($"Elapsed time for execution {payloadName}: {execTime.ElapsedMilliseconds}ms");
+    }
+
+    public async void ExecuteWithoutCheckpointing(string id, string payloadName)
+    {
+
+        Log.Information($"Container is running: {id} without checkpointing");
+        var execTime = Stopwatch.StartNew();
+
+        IList<string> args = new List<string>();
+        args.Add($"python {payloadName}.py");
+        await client.Exec.StartWithConfigContainerExecAsync(
+            id,
+            new ContainerExecStartParameters()
+            {
+                Cmd = args
+            },
+            CancellationToken.None
+        );
+
+        execTime.Stop();
+        Log.Logger.Information($"Elapsed time for execution {payloadName}: {execTime.ElapsedMilliseconds}ms");
     }
 
     public void Checkpoint(string id, string checkpointName)
@@ -157,12 +190,6 @@ public class ContainerController
             string output = process.StandardOutput.ReadToEnd();
             process.WaitForExit();
         }
-
-        // Process process = Process.Start(
-        //     "bash",
-        //     $@"docker checkpoint create {id} {checkpointName} --leave-running");
-
-        // process.WaitForExit();
 
         Log.Information($"Stopped container: {id}");
     }
@@ -188,23 +215,15 @@ public class ContainerController
             process.WaitForExit();
         }
 
-        // Process process = Process.Start(
-        //     "bash",
-        //     $@"docker start {containerName} --checkpoint {checkpointName}");
-
-        // process.WaitForExit();
-
         Log.Information($"Restored container, id: {id}, checkpoint: {checkpointName}");
     }
 
     public async Task<bool> ContainerIsRunningAsync(string id)
     {
-        // Get a list of all the containers on the host
         var containers = await client.Containers.ListContainersAsync(
             new ContainersListParameters()
         );
 
-        // Check the status of each container
         foreach (var container in containers)
         {
             if (container.Status.StartsWith("Up"))
