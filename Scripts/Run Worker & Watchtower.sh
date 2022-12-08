@@ -1,4 +1,4 @@
-sudo docker login ghcr.io -u Jacopopsen -p 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
+sudo docker login ghcr.io 
 
 mkdir .docker
 
@@ -6,7 +6,7 @@ json_data=$(cat <<EOF
 {
 	"auths": {
 		"ghcr.io/p7-cs-22-sw7-06/p7primary": {
-			"auth": "amFjb3BvcHNlbjpnaHBfMEI2SVFoMm9qN1B5aGV5dWkzS2E1SVk2UU9JZGQ5MEUzeVkx"
+			"auth": ""
 		}
 	}
 }
