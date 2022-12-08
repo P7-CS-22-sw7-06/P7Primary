@@ -56,7 +56,7 @@ sudo apt-get install docker-ce=${DOCKER_VERSION} \
 sudo apt-mark hold docker-ce
 sudo apt-mark hold docker-ce-cli
 
-sudo echo "{\"experimental\": true}" >> /etc/docker/daemon.json
+sudo echo "{\"experimental\": true}" >> daemon.json
 sudo mv daemon.json /etc/docker/daemon.json
 
 # -------------------- DotNet --------------------
