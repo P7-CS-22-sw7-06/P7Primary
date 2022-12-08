@@ -35,6 +35,8 @@ sudo make install
 
 # -------------------- Docker --------------------
 
+cd ~
+
 sudo apt update -y && sudo apt upgrade -y
 sudo apt-get install ca-certificates curl gnupg lsb-release
 
@@ -60,6 +62,8 @@ sudo echo "{\"experimental\": true}" >> daemon.json
 sudo mv daemon.json /etc/docker/daemon.json
 
 # -------------------- DotNet --------------------
+
+cd ~
 
 wget https://dot.net/v1/dotnet-install.sh
 sudo chmod +x ./dotnet-install.sh
