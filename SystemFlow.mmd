@@ -1,0 +1,15 @@
+flowchart RL
+    Client(Client) -.-> |User Name| Known{Known}
+
+    subgraph UserSystem [User System]
+        Known --> |No| Denied
+        Known --> |Yes| Approved
+    end
+
+    Approved --> |Return User GUID| Client
+    Denied --> |Denied| Client
+
+    Client -.-> Connected(Connected)
+
+flowchart LR
+    Client(Client) --> |Get Work List| Connection
