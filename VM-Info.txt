@@ -1,0 +1,19 @@
+Server's name: Server1_1
+Your name: p7
+username: server11
+password: server1234
+
+Server's name: server1_2
+Your name: p7
+username: server12
+password: server1234
+
+Server's name: server2_1
+Your name: p7
+username: server21
+password: server1234
+
+Server's name: server2_2
+Your name: p7
+username: server22
+password: server1234
