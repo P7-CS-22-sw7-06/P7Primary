@@ -61,12 +61,9 @@ sudo mv daemon.json /etc/docker/daemon.json
 
 # -------------------- DotNet --------------------
 
-wget https://packages.microsoft.com/config/ubuntu/20.04/packages-microsoft-prod.deb -O packages-microsoft-prod.deb
-sudo dpkg -i packages-microsoft-prod.deb
-rm packages-microsoft-prod.deb
+wget https://dot.net/v1/dotnet-install.sh
+sudo chmod +x ./dotnet-install.sh
+./dotnet-install.sh
 
-sudo apt-get -y update
-sudo apt-get -y install dotnet-sdk-6.0
-
-sudo apt-get -y update
-sudo apt-get -y install aspnetcore-runtime-6.0
+echo 'export DOTNET_ROOT=$HOME/.dotnet' >> ~/.bashrc
+echo 'export PATH=$PATH:$DOTNET_ROOT:$DOTNET_ROOT/tools' >> ~/.bashrc
